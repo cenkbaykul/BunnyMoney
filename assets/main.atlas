@@ -1,0 +1,92 @@
+images {
+  image: "/assets/background.png"
+}
+images {
+  image: "/assets/powerup/powerup_bunny.png"
+}
+animations {
+  id: "coin"
+  images {
+    image: "/assets/coin/gold_1.png"
+  }
+  images {
+    image: "/assets/coin/gold_2.png"
+  }
+  images {
+    image: "/assets/coin/gold_3.png"
+  }
+  images {
+    image: "/assets/coin/gold_4.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 8
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "enemy"
+  images {
+    image: "/assets/enemy/wingMan1.png"
+  }
+  images {
+    image: "/assets/enemy/wingMan2.png"
+  }
+  images {
+    image: "/assets/enemy/wingMan3.png"
+  }
+  images {
+    image: "/assets/enemy/wingMan4.png"
+  }
+  images {
+    image: "/assets/enemy/wingMan5.png"
+  }
+  playback: PLAYBACK_LOOP_PINGPONG
+  fps: 6
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "bunny_idle"
+  images {
+    image: "/assets/player/bunny2_ready.png"
+  }
+  images {
+    image: "/assets/player/bunny2_stand.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 2
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "bunny_run"
+  images {
+    image: "/assets/player/bunny2_walk1.png"
+  }
+  images {
+    image: "/assets/player/bunny2_walk2.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 3
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "bunny_hurt"
+  images {
+    image: "/assets/player/bunny2_hurt.png"
+  }
+  images {
+    image: "/assets/player/bunny2_jump.png"
+  }
+  images {
+    image: "/assets/player/bunny2_hurt.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 2
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+margin: 0
+extrude_borders: 0
+inner_padding: 0

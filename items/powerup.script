@@ -1,0 +1,40 @@
+go.property("screen_size", vmath.vector3())
+go.property("alive_timer_delay", 5.0)
+
+local powerup_snd = "#powerup_snd"
+
+local function pickup()
+    msg.post("#collisionobject", "disable")
+    go.animate(".", "scale", go.PLAYBACK_ONCE_FORWARD, 1.2, go.EASING_LINEAR, 0.2)
+    go.animate(".", "euler.z", go.PLAYBACK_ONCE_FORWARD, - 60, go.EASING_LINEAR, 0.4)
+    go.animate("#sprite", "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(1, 1, 1, 0), go.EASING_LINEAR, 0.4, 0, function()
+        go.delete()
+    end)
+end
+
+local function power_alive_timer(self)
+    timer.delay(self.alive_timer_delay, false, function() go.delete() end)
+end
+
+function init(self)
+    power_alive_timer(self)
+end
+
+function final(self)
+    msg.post("/game_manager", "pickup", {"powerup"})
+    msg.post("/game_manager", "remove_coin", {id = go.get_id()})
+end
+
+function on_message(self, message_id, message, sender)
+    if message_id == hash("pickup") then
+        sound.play(powerup_snd, { delay = 0, gain = 0.5 } )
+        pickup()
+    end
+
+    if message_id == hash("trigger_response") then
+        if message.other_group == hash("enemy") then
+            local pos = vmath.vector3(math.random(0, self.screen_size.x), math.random(0, self.screen_size.y), 0)
+            go.set_position(pos)
+        end
+    end
+end

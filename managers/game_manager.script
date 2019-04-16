@@ -1,0 +1,141 @@
+---- Modules
+local helper = require "managers.helper"
+
+---- Factories
+local Player = "#player_factory"
+local Coin = "#coin_factory"
+local Powerup = "#powerup_factory"
+local Enemy = "#enemy_factory"
+
+---- Sfx
+local hit_snd = "#hit"
+local level_snd = "#level"
+
+---- Properties
+go.property("play_time", 30.0)
+
+---- local's
+local level
+local score
+local time_left
+local screen_size
+local playing = false
+
+
+local function spawn_coins(self)
+    sound.play(level_snd)
+    for i = 1, 4 + level do
+        local pos = vmath.vector3(math.random(0, screen_size.x), math.random(0, screen_size.y), 0)
+        local coin = factory.create(Coin, pos, nil, {screen_size = screen_size}, 0.5)
+        self.coin_container[i] = coin
+    end
+end
+
+local function spawn_powerup(self)
+    local pos = vmath.vector3(math.random(0, screen_size.x), math.random(0, screen_size.y), 0)
+    factory.create(Powerup, pos, nil, {screen_size = screen_size}, 0.5)
+end
+
+local function spawn_obstacles(self)
+    factory.create(Enemy, vmath.vector3(350, 480, 0), nil, nil, 0.3)
+end
+
+local function new_game(self)
+    self.timer_start = true
+    playing = true
+    level = 1
+    score = 0
+    time_left = self.play_time
+    msg.post(self.player, "start", { pos = vmath.vector3(240, 350, 0) })
+    spawn_coins(self)
+    msg.post("/Hud", "update_score", {value = score})
+    msg.post("/Hud", "update_timer", {value = time_left})
+end
+
+local function game_over(self)
+    sound.play(hit_snd)
+    playing = false
+    time_left = 0
+    for _, v in pairs(self.coin_container) do
+        go.delete(v)
+    end
+
+
+    msg.post("/Hud", "show_game_over")
+    msg.post(self.player, "die")
+    self.timer_start = false
+end
+
+local function update_score(self)
+    score = score + 1
+    msg.post("/Hud", "update_score", {value = score})
+end
+
+local function update_timer(self)
+    time_left = time_left + 5
+    msg.post("/Hud", "update_timer", {value = math.ceil(time_left)})
+end
+
+function init(self)
+    helper.seed()
+    screen_size = helper.get_screensize()
+    self.player = factory.create(Player, vmath.vector3(240, 350, 0), nil, {screen_size = screen_size}, 0.5)
+    spawn_obstacles(self)
+
+    ---- Containers
+    self.coin_container = {}
+    --self.powerup_container = {}
+    --self.obstacle_container = {}
+end
+
+function update(self, dt)
+    if not self.timer_start then
+        return
+    end
+
+    time_left = time_left - dt
+    msg.post("/Hud", "update_timer", {value = math.ceil(time_left)})
+    if time_left <= 0 then
+        game_over(self)
+    end
+
+    if playing and #self.coin_container == 0 then
+        level = level + 1
+        time_left = time_left + 5
+        spawn_coins(self)
+        if level > 2 then
+            if math.random(50) > 25 then
+                spawn_powerup(self)
+            end
+        end
+    end
+end
+
+function on_message(self, message_id, message, sender)
+    if message_id == hash("new_game") then
+        new_game(self)
+    end
+
+    if message_id == hash("remove_coin") then
+        for k, v in pairs(self.coin_container) do
+            if v == message.id then
+                table.remove(self.coin_container, k)
+            end
+        end
+    end
+
+    if message_id == hash("pickup") then
+        for _, v in ipairs(message) do
+            if v == "score" then
+                update_score(self)
+            elseif v == "powerup" then
+                update_timer(self)
+            end
+        end
+    end
+
+    if message_id == hash("player_hurt") then
+        game_over(self)
+    end
+
+end
